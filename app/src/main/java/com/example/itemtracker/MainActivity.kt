@@ -10,18 +10,18 @@ import kotlinx.android.synthetic.main.activity_main.*
 
 class MainActivity : AppCompatActivity() {
 
-    lateinit var databaseHelper: DatabaseHelper
-    private val itemListAdapter = ItemListAdapter(this)
+    lateinit var dbHelper: DBHelper
+    private val journalListAdapter = JournalListAdapter(this)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        databaseHelper = DatabaseHelper(this)
+        dbHelper = DBHelper(this)
 
-        recyclerView.adapter = itemListAdapter
+        recyclerView.adapter = journalListAdapter
         recyclerView.layoutManager = LinearLayoutManager(this)
-        itemListAdapter.setItems(DataManager.fetchAllItems(databaseHelper))
+        journalListAdapter.setItems(DataManager.fetchAllEntries(dbHelper))
 
         fab.setOnClickListener{
             val addItem= Intent(this, AddItemActivity::class.java)
@@ -33,7 +33,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (resultCode == Activity.RESULT_OK){
-            itemListAdapter.setItems(DataManager.fetchAllItems(databaseHelper))
+            journalListAdapter.setItems(DataManager.fetchAllEntries(dbHelper))
         }
     }
 }

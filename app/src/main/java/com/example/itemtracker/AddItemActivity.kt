@@ -4,36 +4,35 @@ import android.app.Activity
 import android.app.DatePickerDialog
 import android.content.ContentValues
 import android.content.Intent
+import android.location.Location
+import android.os.Build
 import android.os.Bundle
 import android.widget.Toast
+import androidx.annotation.RequiresApi
+import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_add.*
 import java.text.SimpleDateFormat
+import java.time.LocalDateTime
 import java.util.*
 
 class AddItemActivity : Activity() {
 
     private val myCalendar = Calendar.getInstance()
-    private lateinit var databaseHelper: DatabaseHelper
+    private lateinit var databaseHelper: DBHelper
 
 
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
 
-        databaseHelper = DatabaseHelper(this)
+        databaseHelper = DBHelper(this)
 
         // on clicking ok on the calender dialog
-        val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-            myCalendar.set(Calendar.YEAR, year)
-            myCalendar.set(Calendar.MONTH, monthOfYear)
-            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-            etExp.setText(getFormattedDate(myCalendar.timeInMillis))
-        }
+        val date = LocalDateTime.now().toLocalDate().toString()
+        etDate.setText(date)
 
-        etExp.setOnClickListener {
-            setUpCalender(date)
-        }
 
         bSave.setOnClickListener {
             saveItem()
@@ -47,56 +46,42 @@ class AddItemActivity : Activity() {
     private fun saveItem() {
         var isValid = true
 
-       etItemName.error = if(etItemName?.text.toString().isEmpty()){
+       etEntry.error = if(etEntry?.text.toString().isEmpty()){
             isValid = false
             "Required Field"
         } else null
 
-        etDepartment.error = if(etDepartment?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
-
-        etPrice.error = if(etPrice?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
-
-        etQuantity.error = if(etQuantity?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
-
-        etSku.error = if(etSku?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
+        var invalidRating = ratingBar.numStars == 0
 
 
-        if(isValid){
-            val name = etItemName?.text.toString()
-            val department = etDepartment?.text.toString()
-            val expiry = myCalendar.timeInMillis.toString()
-            val price = etPrice?.text.toString()
-            val quan = etQuantity?.text.toString()
-            val sku = etSku?.text.toString()
+
+        if(isValid && !invalidRating){
+            val entry = etEntry?.text.toString()
+            val date = etDate.text
+            val user = "12345"
+            val mood = ratingBar.rating
+            val loc = Location("dummyprovider")
+            loc.setLatitude(20.3);
+            loc.setLongitude(52.6);
+
+            val jsonString = Gson().toJson(loc)
 
             val db = databaseHelper.writableDatabase
 
             val values = ContentValues()
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_NAME, name)
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_DEPARTMENT, department)
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_DATE, expiry)
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_PRICE, price)
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_QUANTITY, quan)
-            values.put(ItemTrackerDBContract.ItemEntry.COLUMN_SKU, sku)
+            values.put(EntryDBContract.iEntry.ENTRY,entry)
+            values.put(EntryDBContract.iEntry.DATE,date.toString())
+            values.put(EntryDBContract.iEntry.USERID, user)
+            values.put(EntryDBContract.iEntry.MOOD, mood)
+            values.put(EntryDBContract.iEntry.LOC, jsonString)
 
 
-           val result = db.insert(ItemTrackerDBContract.ItemEntry.TABLE_NAME, null, values)
+
+           val result = db.insert(EntryDBContract.iEntry.TABLE_NAME, null, values)
 
             setResult(RESULT_OK, Intent())
 
-            Toast.makeText(applicationContext, "Item Added", Toast.LENGTH_SHORT).show()
+            Toast.makeText(applicationContext, "Journal Entry Added", Toast.LENGTH_SHORT).show()
         }
 
         finish()
@@ -118,4 +103,6 @@ class AddItemActivity : Activity() {
             sdf.format(dobInMilis)
         } ?: "Not Found"
     }
+
+
 }

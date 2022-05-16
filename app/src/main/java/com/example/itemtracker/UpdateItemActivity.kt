@@ -16,34 +16,29 @@ import java.util.*
 
 class UpdateItemActivity : AppCompatActivity(){
 
-    lateinit var databaseHelper : DatabaseHelper
+    lateinit var databaseHelper : DBHelper
     private val myCalendar = Calendar.getInstance()
 
-    var itemId: String? = null
+    var entryId: String? = null
 
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add)
 
-        databaseHelper = DatabaseHelper(this)
+        databaseHelper = DBHelper(this)
 
          val bundle = intent.extras
 
          bundle?.let{
-             itemId = bundle.getString(ItemTrackerDBContract.ItemEntry.COLUMN_ID)
+             entryId = bundle.getString(EntryDBContract.iEntry.ID)
 
-             val item = DataManager.fetchItem(databaseHelper, itemId!!)
+             val entry = DataManager.fetchEntry(databaseHelper, entryId!!)
 
-             item?.let{
+             entry?.let{
 
-                 etItemName.setText(item.name)
-                 etDepartment.setText(item.department)
-                 etQuantity.setText((item.quantity).toString())
-                 etPrice.setText((item.price).toString())
-                 etExp.setText(getFormattedDate(item.usedByDate))
-                 etSku.setText((item.sku).toString())
-
-
+                 etEntry.setText(entry.entry)
+                 ratingBar.rating = entry.moodRating.toFloat()
+                 etDate.setText(entry.entryDate)
              }
          }
 
@@ -53,10 +48,10 @@ class UpdateItemActivity : AppCompatActivity(){
             myCalendar.set(Calendar.MONTH, monthOfYear)
             myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-            etExp.setText(getFormattedDate(myCalendar.timeInMillis))
+            etDate.setText(getFormattedDate(myCalendar.timeInMillis))
         }
 
-        etExp.setOnClickListener {
+        etDate.setOnClickListener {
             setUpCalender(date)
         }
 
@@ -73,47 +68,28 @@ class UpdateItemActivity : AppCompatActivity(){
 
         var isValid = true
 
-        etItemName.error = if (etItemName?.text.toString().isEmpty()) {
+        etEntry.error = if (etEntry?.text.toString().isEmpty()) {
             isValid = false
             "Required Field"
         } else null
 
-        etDepartment.error = if (etDepartment?.text.toString().isEmpty()) {
-            isValid = false
-            "Required Field"
-        } else null
-
-        etPrice.error = if(etPrice?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
-
-        etQuantity.error = if(etQuantity?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
-
-        etSku.error = if(etSku?.text.toString().isEmpty()){
-            isValid = false
-            "Required Field"
-        } else null
 
         if (isValid) {
 
-            val uName = etItemName.text.toString()
-            val uDept = etDepartment.text.toString()
-            val uPrice = etPrice.text.toString().toDouble()
-            val uQuan = etQuantity.text.toString().toInt()
-            val uSku = etSku.text.toString().toInt()
-            val uDate = myCalendar.timeInMillis
-
-            val uItem = Item(itemId!!, uName, uDate, uPrice, uQuan, uSku, uDept)
-
-            DataManager.updateItem(databaseHelper, uItem)
-
-            setResult(Activity.RESULT_OK, Intent())
-
-            Toast.makeText(applicationContext, "Item Updated", Toast.LENGTH_SHORT).show()
+//            val uName = etEntry.text.toString()
+//            val uDept = etDepartment.text.toString()
+//            val uPrice = etPrice.text.toString().toDouble()
+//            val uQuan = etQuantity.text.toString().toInt()
+//            val uSku = etSku.text.toString().toInt()
+//            val uDate = myCalendar.timeInMillis
+//
+//            val uItem = Item(itemId!!, uName, uDate, uPrice, uQuan, uSku, uDept)
+//
+//            DataManager.updateItem(databaseHelper, uItem)
+//
+//            setResult(Activity.RESULT_OK, Intent())
+//
+//            Toast.makeText(applicationContext, "Item Updated", Toast.LENGTH_SHORT).show()
 
             finish()
         }
@@ -147,7 +123,7 @@ class UpdateItemActivity : AppCompatActivity(){
                 val builder = AlertDialog.Builder(this)
                 builder.setMessage(R.string.confirm_sure)
                     .setPositiveButton(R.string.yes){ dialog, itmId ->
-                        val result = DataManager.deleteItem(databaseHelper, itemId.toString())
+                        val result = DataManager.deleteEntry(databaseHelper, item.itemId.toString())
 
                         Toast.makeText(
                             applicationContext, "$result record(s) deleted",

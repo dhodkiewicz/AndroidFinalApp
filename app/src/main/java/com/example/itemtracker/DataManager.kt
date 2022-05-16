@@ -1,29 +1,33 @@
 package com.example.itemtracker
 
 import android.content.ContentValues
-import com.example.itemtracker.ItemTrackerDBContract.*
+import android.location.Location
+import com.example.itemtracker.EntryDBContract.*
+import com.example.itemtracker.EntryDBContract.iEntry.ID
+
+
+import com.google.gson.Gson
 
 
 object DataManager {
 
-    fun fetchAllItems(databaseHelper: DatabaseHelper) : ArrayList<Item>{
+    fun fetchAllEntries(dbHelper: DBHelper) : ArrayList<Entry>{
 
-        val items = ArrayList<Item>()
+        val entries = ArrayList<Entry>()
 
-        val db = databaseHelper.readableDatabase
+        val db = dbHelper.readableDatabase
 
         val columns = arrayOf(
-            ItemEntry.COLUMN_ID,
-            ItemEntry.COLUMN_NAME,
-            ItemEntry.COLUMN_PRICE,
-            ItemEntry.COLUMN_QUANTITY,
-            ItemEntry.COLUMN_SKU,
-            ItemEntry.COLUMN_DATE,
-            ItemEntry.COLUMN_DEPARTMENT
+            ID,
+            iEntry.ENTRY,
+            iEntry.USERID,
+            iEntry.MOOD,
+            iEntry.LOC,
+            iEntry.DATE,
         )
 
         val cursor = db.query(
-            ItemEntry.TABLE_NAME,
+            iEntry.TABLE_NAME,
         columns,
         null,
         null,
@@ -31,52 +35,51 @@ object DataManager {
         null,
         null)
 
-        val idPos = cursor.getColumnIndex(ItemEntry.COLUMN_ID)
-        val namePos = cursor.getColumnIndex(ItemEntry.COLUMN_NAME)
-        val pricePos = cursor.getColumnIndex(ItemEntry.COLUMN_PRICE)
-        val quanPos = cursor.getColumnIndex(ItemEntry.COLUMN_QUANTITY)
-        val skuPos = cursor.getColumnIndex(ItemEntry.COLUMN_SKU)
-        val datePos = cursor.getColumnIndex(ItemEntry.COLUMN_DATE)
-        val depPos = cursor.getColumnIndex(ItemEntry.COLUMN_DEPARTMENT)
+        val idPos = cursor.getColumnIndex(ID)
+        val entryPos = cursor.getColumnIndex(iEntry.ENTRY)
+        val userPos = cursor.getColumnIndex(iEntry.USERID)
+        val moodPos = cursor.getColumnIndex(iEntry.MOOD)
+        val locPos = cursor.getColumnIndex(iEntry.LOC)
+        val datePos = cursor.getColumnIndex(iEntry.DATE)
+
 
         while(cursor.moveToNext()){
 
             val id = cursor.getString(idPos)
-            val name = cursor.getString(namePos)
-            val price = cursor.getString(pricePos).toDouble()
-            val quan = cursor.getString(quanPos).toInt()
-            val sku = cursor.getString(skuPos).toInt()
-            val date = cursor.getLong(datePos)
-            val dep = cursor.getString(depPos)
+            val entry = cursor.getString(entryPos)
+            val user = cursor.getString(userPos)
+            val mood = cursor.getString(moodPos).toDouble()
+            val locJSON = cursor.getString(locPos)
+            val location = Gson().fromJson(locJSON, Location::class.java)
+            val date = cursor.getString(datePos)
 
-            items.add(Item(id,name,date,price,quan,sku,dep))
+            entries.add(Entry(id,user,entry,date,mood,location))
         }
 
         cursor.close()
 
-        return items
+        return entries
     }
 
-    fun fetchItem(dbHelper: DatabaseHelper, itemId: String) : Item?{
+    fun fetchEntry(dbHelper: DBHelper, entryId: String) : Entry?{
 
         val db = dbHelper.readableDatabase
-        var item: Item? = null
+        var tempEntry: Entry? = null
 
         val columns = arrayOf(
-            ItemEntry.COLUMN_NAME,
-            ItemEntry.COLUMN_PRICE,
-            ItemEntry.COLUMN_QUANTITY,
-            ItemEntry.COLUMN_SKU,
-            ItemEntry.COLUMN_DATE,
-            ItemEntry.COLUMN_DEPARTMENT
+            iEntry.ENTRY,
+            iEntry.USERID,
+            iEntry.DATE,
+            iEntry.LOC,
+            iEntry.MOOD,
         )
 
-        val sel = ItemEntry.COLUMN_ID + " LIKE ? "
+        val sel = ID + " LIKE ? " //iEntry ID
 
-        val selArgs = arrayOf(itemId)
+        val selArgs = arrayOf(entryId)
 
         val cursor = db.query(
-            ItemEntry.TABLE_NAME,
+            iEntry.TABLE_NAME,
             columns,
             sel,
             selArgs,
@@ -85,56 +88,54 @@ object DataManager {
             null
         )
 
-        val namePos = cursor.getColumnIndex(ItemEntry.COLUMN_NAME)
-        val pricePos = cursor.getColumnIndex(ItemEntry.COLUMN_PRICE)
-        val quanPos = cursor.getColumnIndex(ItemEntry.COLUMN_QUANTITY)
-        val skuPos = cursor.getColumnIndex(ItemEntry.COLUMN_SKU)
-        val datePos = cursor.getColumnIndex(ItemEntry.COLUMN_DATE)
-        val depPos = cursor.getColumnIndex(ItemEntry.COLUMN_DEPARTMENT)
+        val entryPos = cursor.getColumnIndex(iEntry.ENTRY)
+        val userPos = cursor.getColumnIndex(iEntry.USERID)
+        val moodPos = cursor.getColumnIndex(iEntry.MOOD)
+        val locPos = cursor.getColumnIndex(iEntry.LOC)
+        val datePos = cursor.getColumnIndex(iEntry.DATE)
 
         while (cursor.moveToNext()){
-            val name = cursor.getString(namePos)
-            val price = cursor.getString(pricePos).toDouble()
-            val quan = cursor.getString(quanPos).toInt()
-            val sku = cursor.getString(skuPos).toInt()
-            val date = cursor.getLong(datePos)
-            val dep = cursor.getString(depPos)
+            var entry = cursor.getString(entryPos)
+            val user = cursor.getString(userPos)
+            val mood = cursor.getString(moodPos).toDouble()
+            val loc = cursor.getString(locPos)
+            val location = Gson().fromJson(loc, Location::class.java)
+            val date = cursor.getString(datePos)
 
-            item = Item(itemId,name,date,price,quan,sku,dep)
+            tempEntry = Entry(entryId, user, entry, date, mood, location)
         }
 
         cursor.close()
-        return item
+        return tempEntry
 
     }
 
-    fun updateItem(dbHelper: DatabaseHelper, item: Item){
+    fun updateEntry(dbHelper: DBHelper, entry: Entry){
 
         val db = dbHelper.writableDatabase
 
         val values = ContentValues()
-        values.put(ItemEntry.COLUMN_NAME, item.name)
-        values.put(ItemEntry.COLUMN_DEPARTMENT, item.department)
-        values.put(ItemEntry.COLUMN_DATE, item.usedByDate)
-        values.put(ItemEntry.COLUMN_PRICE, item.price)
-        values.put(ItemEntry.COLUMN_QUANTITY, item.quantity)
-        values.put(ItemEntry.COLUMN_SKU, item.sku)
+        values.put(iEntry.ENTRY, entry.entry)
+        values.put(iEntry.MOOD, entry.moodRating)
 
-        val sel = ItemEntry.COLUMN_ID + " LIKE ? "
 
-        val selArgs = arrayOf(item.id)
+        val sel = iEntry.ID + " LIKE ? "
 
-        db.update(ItemEntry.TABLE_NAME, values, sel, selArgs)
+        val selArgs = arrayOf(entry.id)
+
+        db.update(iEntry.TABLE_NAME, values, sel, selArgs)
     }
 
-    fun deleteItem(dbHelper: DatabaseHelper, itemId: String) : Int{
+    fun deleteEntry(dbHelper: DBHelper, entryId: String) : Int{
 
         val db = dbHelper.writableDatabase
 
-        val sel = ItemEntry.COLUMN_ID + " LIKE ? "
+        val sel = iEntry.ID + " LIKE ? "
 
-        val selArgs = arrayOf(itemId)
+        val selArgs = arrayOf(entryId)
 
-        return db.delete(ItemEntry.TABLE_NAME, sel, selArgs)
+        return db.delete(iEntry.TABLE_NAME, sel, selArgs)
     }
 }
+
+

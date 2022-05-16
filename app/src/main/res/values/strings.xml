@@ -1,13 +1,13 @@
 <resources>
     <string name="app_name">Jabber</string>
     <string name="action_delete">Delete</string>
-    <string name="name">Food Name</string>
+    <string name="entry">Journal Entry</string>
     <string name="department">Department</string>
     <string name="cancel">Cancel</string>
     <string name="save">Save</string>
     <string name="sku">SKU #</string>
-    <string name="price">Price</string>
-    <string name="exp">Expiration</string>
+    <string name="mood">Mood Rating</string>
+    <string name="date">Date</string>
     <string name="quantity">Quantity</string>
     <string name="action_delete_all">Delete All</string>
     <string name="confirm_sure">Are you sure you want to delete all data?</string>
