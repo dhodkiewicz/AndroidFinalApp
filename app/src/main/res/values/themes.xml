@@ -2,7 +2,7 @@
     <!-- Base application theme. -->
     <style name="Theme.ItemTracker" parent="Theme.MaterialComponents.DayNight.DarkActionBar">
         <!-- Primary brand color. -->
-        <item name="colorPrimary">#05FFD8</item>
+        <item name="colorPrimary">#067564</item>
         <item name="colorPrimaryVariant">#000002</item>
         <item name="colorOnPrimary">#2B0242</item>
         <!-- Secondary brand color. -->

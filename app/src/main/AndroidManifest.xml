@@ -22,8 +22,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".AddItemActivity" />
-        <activity android:name=".UpdateItemActivity"/>
+        <activity android:name=".AddEntryActivity" />
+        <activity android:name=".UpdateEntryActivity"/>
     </application>
 
 </manifest>
