@@ -4,12 +4,14 @@ import android.app.Activity
 import android.content.Intent
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.widget.Toast
 import androidx.recyclerview.widget.LinearLayoutManager
 import kotlinx.android.synthetic.main.activity_main.*
 
 
 class MainActivity : AppCompatActivity() {
 
+    
     lateinit var dbHelper: DBHelper
     private val journalListAdapter = JournalListAdapter(this)
 
@@ -26,6 +28,10 @@ class MainActivity : AppCompatActivity() {
         fab.setOnClickListener{
             val addItem= Intent(this, AddItemActivity::class.java)
             startActivityForResult(addItem,1)
+        }
+
+        btnExport.setOnClickListener{
+            FirebaseManager.setEntries(DataManager.fetchAllEntries(dbHelper))
         }
     }
 

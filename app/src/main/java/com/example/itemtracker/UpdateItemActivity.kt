@@ -125,21 +125,6 @@ class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
         }
     }
 
-    private fun setUpCalender(date: DatePickerDialog.OnDateSetListener) {
-        DatePickerDialog(
-            this, date, myCalendar
-                .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-            myCalendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
-    private fun getFormattedDate(dateInMilis: Long?): String {
-
-        return dateInMilis?.let {
-            val sdf = SimpleDateFormat("d MMM, yyyy", Locale.getDefault())
-            sdf.format(dateInMilis)
-        } ?: "Not Found"
-    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean{
         menuInflater.inflate(R.menu.menu_item, menu)

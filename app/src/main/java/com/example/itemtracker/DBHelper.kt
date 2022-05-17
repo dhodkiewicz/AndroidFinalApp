@@ -11,7 +11,7 @@ import android.database.sqlite.SQLiteOpenHelper
             db?.execSQL(EntryDBContract.iEntry.SQL_CREATE_ENTRIES)
         }
         override fun onUpgrade(db: SQLiteDatabase?, oldVersion: Int, newVersion: Int) {
-            db?.execSQL(ItemTrackerDBContract.ItemEntry.SQL_DROP_TABLE)
+            db?.execSQL(EntryDBContract.iEntry.SQL_DROP_TABLE)
             onCreate(db)
         }
 
