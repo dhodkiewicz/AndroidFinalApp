@@ -7,7 +7,7 @@ class Entry(
     val userId: String,
     var entry: String,
     val entryDate: String,
-    val moodRating: Double,
+    var moodRating: Double,
     val location: Data,
 )
 {

@@ -57,14 +57,7 @@ class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
              }
          }
 
-        // on clicking ok on the calender dialog
-        val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-            myCalendar.set(Calendar.YEAR, year)
-            myCalendar.set(Calendar.MONTH, monthOfYear)
-            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-            etDate.setText(getFormattedDate(myCalendar.timeInMillis))
-        }
 
          btnTxtToSpeech.setOnClickListener(View.OnClickListener{
              speakOut()
@@ -91,10 +84,6 @@ class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
              }
          }
 
-        etDate.setOnClickListener {
-            setUpCalender(date)
-        }
-
         bSave.setOnClickListener {
             saveEntry()
         }
@@ -120,6 +109,7 @@ class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
 
             val newEntry = this.entry
             newEntry?.entry = etEntry.text.toString()
+            newEntry?.moodRating = ratingBar.rating.toDouble()
             if (newEntry != null) {
                 DataManager.updateEntry(databaseHelper, newEntry)
             }
