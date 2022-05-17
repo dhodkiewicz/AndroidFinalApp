@@ -2,24 +2,33 @@ package com.example.itemtracker
 
 import android.app.Activity
 import android.app.DatePickerDialog
+import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Intent
 import android.location.Location
+import android.net.Uri
 import android.os.Build
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
+import android.text.Editable
+import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
+import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.appcompat.app.AppCompatActivity
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_add.*
-import java.text.SimpleDateFormat
 import java.time.LocalDateTime
 import java.util.*
 
-class AddItemActivity : Activity() {
+class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
-    private val myCalendar = Calendar.getInstance()
     private lateinit var databaseHelper: DBHelper
-
+    lateinit var textToSpeech: TextToSpeech
+    lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -27,12 +36,18 @@ class AddItemActivity : Activity() {
         setContentView(R.layout.activity_add)
 
         databaseHelper = DBHelper(this)
-
+        textToSpeech = TextToSpeech(this, this)
         // on clicking ok on the calender dialog
 
         val date = LocalDateTime.now().toLocalDate().toString()
         etDate.setText(date)
 
+
+        btnTxtToSpeech.setOnClickListener(View.OnClickListener{
+            speakOut()
+        })
+
+        btnTxtToSpeech.isEnabled = false
 
         bSave.setOnClickListener {
             saveItem()
@@ -41,6 +56,34 @@ class AddItemActivity : Activity() {
         bCancel.setOnClickListener {
             finish()
         }
+
+        btnSpeechToTxt.setOnClickListener(View.OnClickListener {
+            val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+            intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+            intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "SAY SOMETHING!!! GRAHHH!!")
+            try{
+                activityResultLauncher.launch(intent)
+                Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+            }catch(exp: ActivityNotFoundException){
+                Toast.makeText(this, "Device Does not Support", Toast.LENGTH_SHORT).show()
+            }
+        })
+
+        activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                result: ActivityResult? ->
+            if(result!!.resultCode == RESULT_OK && result!!.data !=null){
+                val spkText = result!!.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS) as ArrayList<Editable>
+                etEntry.text = spkText[0]
+            }
+        }
+
+    }
+
+
+    private fun speakOut() {
+        val textForSpeech = etEntry.text.toString()
+        textToSpeech.speak(textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 
     private fun saveItem() {
@@ -87,21 +130,19 @@ class AddItemActivity : Activity() {
         finish()
     }
 
-    private fun setUpCalender(date: DatePickerDialog.OnDateSetListener) {
 
-        DatePickerDialog(
-            this, date, myCalendar
-                .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-            myCalendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
-    private fun getFormattedDate(dobInMilis: Long?): String {
-
-        return dobInMilis?.let {
-            val sdf = SimpleDateFormat("d MMM, yyyy", Locale.getDefault())
-            sdf.format(dobInMilis)
-        } ?: "Not Found"
+    override fun onInit(status: Int) {
+        if(status == TextToSpeech.SUCCESS){
+            val res= textToSpeech.setLanguage(Locale.getDefault())
+            if(res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED){
+                Toast.makeText(this, "Language not supported", Toast.LENGTH_SHORT).show()
+            }
+            else{
+                btnTxtToSpeech.isEnabled = true
+            }
+        }else{
+            Toast.makeText(this, "Failed to initialize", Toast.LENGTH_SHORT).show()
+        }
     }
 
 

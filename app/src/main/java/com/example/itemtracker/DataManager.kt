@@ -126,13 +126,13 @@ object DataManager {
         db.update(iEntry.TABLE_NAME, values, sel, selArgs)
     }
 
-    fun deleteEntry(dbHelper: DBHelper, entryId: String) : Int{
+    fun deleteEntry(dbHelper: DBHelper, entry: Entry) : Int{
 
         val db = dbHelper.writableDatabase
 
         val sel = iEntry.ID + " LIKE ? "
 
-        val selArgs = arrayOf(entryId)
+        val selArgs = arrayOf(entry.id)
 
         return db.delete(iEntry.TABLE_NAME, sel, selArgs)
     }

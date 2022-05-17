@@ -5,7 +5,7 @@ import android.location.Location
 class Entry(
     val id: String,
     val userId: String,
-    val entry: String,
+    var entry: String,
     val entryDate: String,
     val moodRating: Double,
     val location: Location,

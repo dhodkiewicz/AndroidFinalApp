@@ -12,79 +12,25 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="56dp"
-        app:layout_constraintBottom_toTopOf="@+id/textInputLayout"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
-        <androidx.appcompat.widget.AppCompatEditText
+        <EditText
             android:id="@+id/etEntry"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:ems="15"
-            android:hint="@string/entry"
-            android:importantForAutofill="no"
-            android:inputType="text">
+            android:layout_height="200dp"
+            android:background="@drawable/edittext_bg"
+            android:ems="10"
+            android:gravity="start|top"
+            android:inputType="textMultiLine"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintVertical_bias="0.218" />
 
-        </androidx.appcompat.widget.AppCompatEditText>
     </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout3">
-
-        <androidx.appcompat.widget.AppCompatEditText
-            android:id="@+id/etDate"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:clickable="true"
-            android:ems="15"
-            android:focusable="false"
-            android:hint="@string/date"
-            android:importantForAutofill="no"
-            android:inputType="text"
-            android:maxLines="1">
-
-        </androidx.appcompat.widget.AppCompatEditText>
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <com.google.android.material.textfield.TextInputLayout
-        android:id="@+id/textInputLayout2"
-        android:layout_width="397dp"
-        android:layout_height="61dp"
-        android:layout_gravity="center"
-        android:layout_marginTop="167dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
-
-        <RatingBar
-            android:id="@+id/ratingBar"
-            android:layout_width="wrap_content"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:clickable="true"
-            android:hapticFeedbackEnabled="true"
-            android:max="5"
-            android:numStars="0"
-            android:rating="0" />
-    </com.google.android.material.textfield.TextInputLayout>
-
-    <!-- Price Field start-->
-
-    <!-- Price field end -->
-
-    <!-- Quantity Field start-->
-
-    <!-- Quantity field end -->
-
-    <!-- SKU Field start-->
-
-    <!-- SKU field end -->
 
 
     <Button
@@ -92,30 +38,55 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:layout_marginTop="34dp"
         android:layout_weight=".5"
         android:text="@string/cancel"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="1.0"
+        app:layout_constraintHorizontal_bias="0.0"
         app:layout_constraintStart_toStartOf="@+id/guideline"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/btnTxtToSpeech"
+        app:layout_constraintVertical_bias="0.676" />
 
     <Button
         android:id="@+id/bSave"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_margin="5dp"
-        android:layout_marginTop="156dp"
+        android:layout_marginBottom="140dp"
         android:layout_weight=".5"
         android:text="@string/save"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@+id/guideline"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textInputLayout2"
-        app:layout_constraintVertical_bias="0.0" />
+        app:layout_constraintTop_toBottomOf="@+id/btnSpeechToTxt"
+        app:layout_constraintVertical_bias="0.681" />
+
+    <Button
+        android:id="@+id/btnSpeechToTxt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#49F809"
+        android:text="Speech to Text"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.064"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.688" />
+
+    <Button
+        android:id="@+id/btnTxtToSpeech"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:backgroundTint="#E30B0B"
+        android:text="Text to Speech"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.895"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.688" />
 
     <androidx.constraintlayout.widget.Guideline
         android:id="@+id/guideline"
@@ -123,5 +94,40 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         app:layout_constraintGuide_percent="0.5" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/etDate"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:clickable="true"
+        android:ems="15"
+        android:focusable="false"
+        android:hint="@string/date"
+        android:importantForAutofill="no"
+        android:inputType="text"
+        android:maxLines="1"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/ratingBar"
+        app:layout_constraintVertical_bias="0.0"
+        tools:layout_editor_absoluteX="-4dp">
+
+    </androidx.appcompat.widget.AppCompatEditText>
+
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="260dp"
+        android:layout_weight="1"
+        android:clickable="true"
+        android:hapticFeedbackEnabled="true"
+        android:max="5"
+        android:numStars="0"
+        android:rating="0"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

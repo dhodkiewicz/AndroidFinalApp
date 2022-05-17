@@ -3,11 +3,16 @@ package com.example.itemtracker
 import android.app.Activity
 import android.app.AlertDialog
 import android.app.DatePickerDialog
+import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.os.Bundle
+import android.speech.RecognizerIntent
+import android.speech.tts.TextToSpeech
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_add.*
 import java.text.SimpleDateFormat
@@ -18,8 +23,11 @@ class UpdateItemActivity : AppCompatActivity(){
 
     lateinit var databaseHelper : DBHelper
     private val myCalendar = Calendar.getInstance()
+    lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    lateinit var textToSpeech: TextToSpeech
 
     var entryId: String? = null
+    var entry: Entry? = null
 
      override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,13 +40,12 @@ class UpdateItemActivity : AppCompatActivity(){
          bundle?.let{
              entryId = bundle.getString(EntryDBContract.iEntry.ID)
 
-             val entry = DataManager.fetchEntry(databaseHelper, entryId!!)
+             entry = DataManager.fetchEntry(databaseHelper, entryId!!)
 
              entry?.let{
-
-                 etEntry.setText(entry.entry)
-                 ratingBar.rating = entry.moodRating.toFloat()
-                 etDate.setText(entry.entryDate)
+                 etEntry.setText(entry!!.entry)
+                 ratingBar.rating = entry!!.moodRating.toFloat()
+                 etDate.setText(entry!!.entryDate)
              }
          }
 
@@ -51,12 +58,29 @@ class UpdateItemActivity : AppCompatActivity(){
             etDate.setText(getFormattedDate(myCalendar.timeInMillis))
         }
 
+         btnTxtToSpeech.setOnClickListener(View.OnClickListener{
+             speakOut()
+         })
+
+         btnSpeechToTxt.setOnClickListener(View.OnClickListener {
+             val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
+             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
+             intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
+             intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "SAY SOMETHING!!! GRAHHH!!")
+             try{
+                 activityResultLauncher.launch(intent)
+                 Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
+             }catch(exp: ActivityNotFoundException){
+                 Toast.makeText(this, "Device Does not Support", Toast.LENGTH_SHORT).show()
+             }
+         })
+
         etDate.setOnClickListener {
             setUpCalender(date)
         }
 
         bSave.setOnClickListener {
-            saveEmployee()
+            saveEntry()
         }
 
         bCancel.setOnClickListener {
@@ -64,7 +88,7 @@ class UpdateItemActivity : AppCompatActivity(){
         }
     }
 
-    private fun saveEmployee() {
+    private fun saveEntry() {
 
         var isValid = true
 
@@ -76,20 +100,18 @@ class UpdateItemActivity : AppCompatActivity(){
 
         if (isValid) {
 
-//            val uName = etEntry.text.toString()
-//            val uDept = etDepartment.text.toString()
-//            val uPrice = etPrice.text.toString().toDouble()
-//            val uQuan = etQuantity.text.toString().toInt()
-//            val uSku = etSku.text.toString().toInt()
-//            val uDate = myCalendar.timeInMillis
-//
-//            val uItem = Item(itemId!!, uName, uDate, uPrice, uQuan, uSku, uDept)
-//
-//            DataManager.updateItem(databaseHelper, uItem)
-//
-//            setResult(Activity.RESULT_OK, Intent())
-//
-//            Toast.makeText(applicationContext, "Item Updated", Toast.LENGTH_SHORT).show()
+            val newEntry = this.entry
+            newEntry?.entry = etEntry.text.toString()
+            if (newEntry != null) {
+                DataManager.updateEntry(databaseHelper, newEntry)
+            }
+            else{
+                Toast.makeText(applicationContext, "Entry is null here", Toast.LENGTH_SHORT).show()
+            }
+
+            setResult(Activity.RESULT_OK, Intent())
+
+            Toast.makeText(applicationContext, "Item Updated", Toast.LENGTH_SHORT).show()
 
             finish()
         }
@@ -116,6 +138,7 @@ class UpdateItemActivity : AppCompatActivity(){
         return true
     }
 
+    //on Delete
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return when (item.itemId){
 
@@ -123,7 +146,7 @@ class UpdateItemActivity : AppCompatActivity(){
                 val builder = AlertDialog.Builder(this)
                 builder.setMessage(R.string.confirm_sure)
                     .setPositiveButton(R.string.yes){ dialog, itmId ->
-                        val result = DataManager.deleteEntry(databaseHelper, item.itemId.toString())
+                        val result = DataManager.deleteEntry(databaseHelper, this.entry!!)
 
                         Toast.makeText(
                             applicationContext, "$result record(s) deleted",
@@ -145,5 +168,10 @@ class UpdateItemActivity : AppCompatActivity(){
             }
             else -> super.onOptionsItemSelected(item)
         }
+    }
+
+    private fun speakOut() {
+        val textForSpeech = etEntry.text.toString()
+        textToSpeech.speak(textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null)
     }
 }
