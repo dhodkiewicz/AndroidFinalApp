@@ -40,6 +40,17 @@
             app:layout_constraintTop_toBottomOf="@+id/tvEntry" />
 
         <TextView
+            android:id="@+id/tvGeo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_margin="7dp"
+            android:text="@string/geo"
+            android:textColor="#616161"
+            android:textSize="18sp"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvDate" />
+
+        <TextView
             android:id="@+id/tvRating"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -48,7 +59,7 @@
             android:textColor="#616161"
             android:textSize="18sp"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tvDate" />
+            app:layout_constraintTop_toBottomOf="@+id/tvGeo" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 

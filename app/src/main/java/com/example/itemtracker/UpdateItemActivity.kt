@@ -8,23 +8,28 @@ import android.content.Intent
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
+import android.text.Editable
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import kotlinx.android.synthetic.main.activity_add.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-class UpdateItemActivity : AppCompatActivity(){
+class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
 
     lateinit var databaseHelper : DBHelper
     private val myCalendar = Calendar.getInstance()
     lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     lateinit var textToSpeech: TextToSpeech
+
+
 
     var entryId: String? = null
     var entry: Entry? = null
@@ -34,6 +39,9 @@ class UpdateItemActivity : AppCompatActivity(){
         setContentView(R.layout.activity_add)
 
         databaseHelper = DBHelper(this)
+         textToSpeech = TextToSpeech(this, this)
+
+
 
          val bundle = intent.extras
 
@@ -49,14 +57,7 @@ class UpdateItemActivity : AppCompatActivity(){
              }
          }
 
-        // on clicking ok on the calender dialog
-        val date = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-            myCalendar.set(Calendar.YEAR, year)
-            myCalendar.set(Calendar.MONTH, monthOfYear)
-            myCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
 
-            etDate.setText(getFormattedDate(myCalendar.timeInMillis))
-        }
 
          btnTxtToSpeech.setOnClickListener(View.OnClickListener{
              speakOut()
@@ -66,7 +67,7 @@ class UpdateItemActivity : AppCompatActivity(){
              val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-             intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "SAY SOMETHING!!! GRAHHH!!")
+             intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Recording Now...")
              try{
                  activityResultLauncher.launch(intent)
                  Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
@@ -75,9 +76,13 @@ class UpdateItemActivity : AppCompatActivity(){
              }
          })
 
-        etDate.setOnClickListener {
-            setUpCalender(date)
-        }
+         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                 result: ActivityResult? ->
+             if(result!!.resultCode == RESULT_OK && result!!.data !=null){
+                 val spkText = result!!.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS) as ArrayList<Editable>
+                 etEntry.text = spkText[0]
+             }
+         }
 
         bSave.setOnClickListener {
             saveEntry()
@@ -87,6 +92,8 @@ class UpdateItemActivity : AppCompatActivity(){
             finish()
         }
     }
+
+
 
     private fun saveEntry() {
 
@@ -102,6 +109,7 @@ class UpdateItemActivity : AppCompatActivity(){
 
             val newEntry = this.entry
             newEntry?.entry = etEntry.text.toString()
+            newEntry?.moodRating = ratingBar.rating.toDouble()
             if (newEntry != null) {
                 DataManager.updateEntry(databaseHelper, newEntry)
             }
@@ -117,21 +125,6 @@ class UpdateItemActivity : AppCompatActivity(){
         }
     }
 
-    private fun setUpCalender(date: DatePickerDialog.OnDateSetListener) {
-        DatePickerDialog(
-            this, date, myCalendar
-                .get(Calendar.YEAR), myCalendar.get(Calendar.MONTH),
-            myCalendar.get(Calendar.DAY_OF_MONTH)
-        ).show()
-    }
-
-    private fun getFormattedDate(dateInMilis: Long?): String {
-
-        return dateInMilis?.let {
-            val sdf = SimpleDateFormat("d MMM, yyyy", Locale.getDefault())
-            sdf.format(dateInMilis)
-        } ?: "Not Found"
-    }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean{
         menuInflater.inflate(R.menu.menu_item, menu)
@@ -173,5 +166,19 @@ class UpdateItemActivity : AppCompatActivity(){
     private fun speakOut() {
         val textForSpeech = etEntry.text.toString()
         textToSpeech.speak(textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    override fun onInit(status: Int) {
+        if(status == TextToSpeech.SUCCESS){
+            val res= textToSpeech.setLanguage(Locale.getDefault())
+            if(res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED){
+                Toast.makeText(this, "Language not supported", Toast.LENGTH_SHORT).show()
+            }
+            else{
+                btnTxtToSpeech.isEnabled = true
+            }
+        }else{
+            Toast.makeText(this, "Failed to initialize", Toast.LENGTH_SHORT).show()
+        }
     }
 }
