@@ -113,9 +113,12 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             val date = etDate.text
             val user = "12345"
             val mood = ratingBar.rating
-            val loc = Companion.userLocation
 
-            val jsonString = returnJSON()
+            var lat = tvLat.text.toString().toDouble()
+            var long = tvLong.text.toString().toDouble()
+
+            var gson = Gson()
+            val str= gson.toJson(Data(lat,long))
 
             val db = databaseHelper.writableDatabase
 
@@ -124,7 +127,7 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             values.put(EntryDBContract.iEntry.DATE,date.toString())
             values.put(EntryDBContract.iEntry.USERID, user)
             values.put(EntryDBContract.iEntry.MOOD, mood)
-            values.put(EntryDBContract.iEntry.LOC, jsonString)
+            values.put(EntryDBContract.iEntry.LOC, str)
 
            val result = db.insert(EntryDBContract.iEntry.TABLE_NAME, null, values)
 
@@ -168,7 +171,9 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         }
         task.addOnSuccessListener {
             if(it!= null){
-                Companion.userLocation = Location(it)
+                this.tvLong.text = it.longitude.toString()
+                this.tvLat.text = it.latitude.toString()
+                task.isComplete
             }
         }
     }
@@ -190,19 +195,14 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             }
         }
         return true
+        task.isComplete
     }
 
     companion object {
         lateinit var userLocation: Location
     }
 
-    private fun returnJSON(): String {
-        var lat = userLocation.latitude
-        var long = userLocation.longitude
-        var gson = Gson()
-        return gson.toJson(Data(lat,long))
-    }
-
 
 
 }
+

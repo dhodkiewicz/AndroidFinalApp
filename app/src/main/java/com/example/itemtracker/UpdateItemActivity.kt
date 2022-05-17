@@ -5,25 +5,24 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
+import android.text.Editable
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.ActivityResultLauncher
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.app.ActivityCompat
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_add.*
 import java.text.SimpleDateFormat
 import java.util.*
 
 
-class UpdateItemActivity : AppCompatActivity(){
+class UpdateItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener{
 
     lateinit var databaseHelper : DBHelper
     private val myCalendar = Calendar.getInstance()
@@ -40,6 +39,7 @@ class UpdateItemActivity : AppCompatActivity(){
         setContentView(R.layout.activity_add)
 
         databaseHelper = DBHelper(this)
+         textToSpeech = TextToSpeech(this, this)
 
 
 
@@ -82,6 +82,14 @@ class UpdateItemActivity : AppCompatActivity(){
                  Toast.makeText(this, "Device Does not Support", Toast.LENGTH_SHORT).show()
              }
          })
+
+         activityResultLauncher = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                 result: ActivityResult? ->
+             if(result!!.resultCode == RESULT_OK && result!!.data !=null){
+                 val spkText = result!!.data!!.getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS) as ArrayList<Editable>
+                 etEntry.text = spkText[0]
+             }
+         }
 
         etDate.setOnClickListener {
             setUpCalender(date)
@@ -183,5 +191,19 @@ class UpdateItemActivity : AppCompatActivity(){
     private fun speakOut() {
         val textForSpeech = etEntry.text.toString()
         textToSpeech.speak(textForSpeech, TextToSpeech.QUEUE_FLUSH, null, null)
+    }
+
+    override fun onInit(status: Int) {
+        if(status == TextToSpeech.SUCCESS){
+            val res= textToSpeech.setLanguage(Locale.getDefault())
+            if(res == TextToSpeech.LANG_MISSING_DATA || res == TextToSpeech.LANG_NOT_SUPPORTED){
+                Toast.makeText(this, "Language not supported", Toast.LENGTH_SHORT).show()
+            }
+            else{
+                btnTxtToSpeech.isEnabled = true
+            }
+        }else{
+            Toast.makeText(this, "Failed to initialize", Toast.LENGTH_SHORT).show()
+        }
     }
 }
