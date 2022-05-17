@@ -5,6 +5,7 @@ import android.app.AlertDialog
 import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
 import android.speech.RecognizerIntent
 import android.speech.tts.TextToSpeech
@@ -14,6 +15,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.ActivityResultLauncher
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import kotlinx.android.synthetic.main.activity_add.*
 import java.text.SimpleDateFormat
 import java.util.*
@@ -26,6 +30,8 @@ class UpdateItemActivity : AppCompatActivity(){
     lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
     lateinit var textToSpeech: TextToSpeech
 
+
+
     var entryId: String? = null
     var entry: Entry? = null
 
@@ -34,6 +40,8 @@ class UpdateItemActivity : AppCompatActivity(){
         setContentView(R.layout.activity_add)
 
         databaseHelper = DBHelper(this)
+
+
 
          val bundle = intent.extras
 
@@ -66,7 +74,7 @@ class UpdateItemActivity : AppCompatActivity(){
              val intent = Intent(RecognizerIntent.ACTION_RECOGNIZE_SPEECH)
              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM)
              intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE, Locale.getDefault())
-             intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "SAY SOMETHING!!! GRAHHH!!")
+             intent.putExtra(RecognizerIntent.EXTRA_PROMPT, "Recording Now...")
              try{
                  activityResultLauncher.launch(intent)
                  Toast.makeText(this, "Success!", Toast.LENGTH_SHORT).show()
@@ -87,6 +95,8 @@ class UpdateItemActivity : AppCompatActivity(){
             finish()
         }
     }
+
+
 
     private fun saveEntry() {
 

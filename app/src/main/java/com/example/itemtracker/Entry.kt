@@ -8,7 +8,7 @@ class Entry(
     var entry: String,
     val entryDate: String,
     val moodRating: Double,
-    val location: Location,
+    val location: Data,
 )
 {
 

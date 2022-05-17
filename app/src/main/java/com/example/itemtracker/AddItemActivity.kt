@@ -1,12 +1,10 @@
 package com.example.itemtracker
 
-import android.app.Activity
-import android.app.DatePickerDialog
 import android.content.ActivityNotFoundException
 import android.content.ContentValues
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.location.Location
-import android.net.Uri
 import android.os.Build
 import android.os.Bundle
 import android.speech.RecognizerIntent
@@ -19,6 +17,9 @@ import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.app.ActivityCompat
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.gson.Gson
 import kotlinx.android.synthetic.main.activity_add.*
 import java.time.LocalDateTime
@@ -29,6 +30,7 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
     private lateinit var databaseHelper: DBHelper
     lateinit var textToSpeech: TextToSpeech
     lateinit var activityResultLauncher: ActivityResultLauncher<Intent>
+    lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,13 +41,21 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
         textToSpeech = TextToSpeech(this, this)
         // on clicking ok on the calender dialog
 
+        // set the fusedLocationProviderClient
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this)
+
+
         val date = LocalDateTime.now().toLocalDate().toString()
         etDate.setText(date)
 
 
-        btnTxtToSpeech.setOnClickListener(View.OnClickListener{
+        btnTxtToSpeech.setOnClickListener{
             speakOut()
-        })
+        }
+
+        btnLocation.setOnClickListener{
+            fetchLocation()
+        }
 
         btnTxtToSpeech.isEnabled = false
 
@@ -98,16 +108,14 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
 
 
 
-        if(isValid && !invalidRating){
+        if(isValid && !invalidRating && isPermissionGranted()){
             val entry = etEntry?.text.toString()
             val date = etDate.text
             val user = "12345"
             val mood = ratingBar.rating
-            val loc = Location("dummyprovider")
-            loc.setLatitude(20.3);
-            loc.setLongitude(52.6);
+            val loc = Companion.userLocation
 
-            val jsonString = Gson().toJson(loc)
+            val jsonString = returnJSON()
 
             val db = databaseHelper.writableDatabase
 
@@ -118,13 +126,14 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             values.put(EntryDBContract.iEntry.MOOD, mood)
             values.put(EntryDBContract.iEntry.LOC, jsonString)
 
-
-
            val result = db.insert(EntryDBContract.iEntry.TABLE_NAME, null, values)
 
             setResult(RESULT_OK, Intent())
 
             Toast.makeText(applicationContext, "Journal Entry Added", Toast.LENGTH_SHORT).show()
+        }
+        else{
+            Toast.makeText(applicationContext, "Invalid Entry", Toast.LENGTH_SHORT).show()
         }
 
         finish()
@@ -144,6 +153,56 @@ class AddItemActivity : AppCompatActivity(), TextToSpeech.OnInitListener {
             Toast.makeText(this, "Failed to initialize", Toast.LENGTH_SHORT).show()
         }
     }
+
+    //Fetch the user's current location as long as permission settings are valid
+    private fun fetchLocation() {
+
+        val task = fusedLocationProviderClient.lastLocation
+
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED && ActivityCompat
+                .checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ){
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+            return
+        }
+        task.addOnSuccessListener {
+            if(it!= null){
+                Companion.userLocation = Location(it)
+            }
+        }
+    }
+
+    private fun isPermissionGranted(): Boolean {
+
+        val task = fusedLocationProviderClient.lastLocation
+
+        if(ActivityCompat.checkSelfPermission(this, android.Manifest.permission.ACCESS_FINE_LOCATION)
+            != PackageManager.PERMISSION_GRANTED && ActivityCompat
+                .checkSelfPermission(this,android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED
+        ){
+            ActivityCompat.requestPermissions(this, arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION), 101)
+            return false
+        }
+        task.addOnSuccessListener {
+            if(it!= null){
+                true
+            }
+        }
+        return true
+    }
+
+    companion object {
+        lateinit var userLocation: Location
+    }
+
+    private fun returnJSON(): String {
+        var lat = userLocation.latitude
+        var long = userLocation.longitude
+        var gson = Gson()
+        return gson.toJson(Data(lat,long))
+    }
+
 
 
 }

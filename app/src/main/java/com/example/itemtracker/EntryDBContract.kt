@@ -4,7 +4,7 @@ import android.provider.BaseColumns
 
 class EntryDBContract {
     object iEntry : BaseColumns { // implements interface when working with a cursor
-        const val TABLE_NAME = "entries"
+        const val TABLE_NAME = "entry"
         const val ID = BaseColumns._ID
         const val ENTRY = "entryText"
         const val USERID = "userId"

@@ -50,7 +50,7 @@ object DataManager {
             val user = cursor.getString(userPos)
             val mood = cursor.getString(moodPos).toDouble()
             val locJSON = cursor.getString(locPos)
-            val location = Gson().fromJson(locJSON, Location::class.java)
+            val location = Gson().fromJson(locJSON, Data::class.java)
             val date = cursor.getString(datePos)
 
             entries.add(Entry(id,user,entry,date,mood,location))
@@ -99,7 +99,7 @@ object DataManager {
             val user = cursor.getString(userPos)
             val mood = cursor.getString(moodPos).toDouble()
             val loc = cursor.getString(locPos)
-            val location = Gson().fromJson(loc, Location::class.java)
+            val location = Gson().fromJson(loc, Data::class.java)
             val date = cursor.getString(datePos)
 
             tempEntry = Entry(entryId, user, entry, date, mood, location)
